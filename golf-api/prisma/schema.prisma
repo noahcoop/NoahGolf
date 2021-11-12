@@ -1,0 +1,43 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Course {
+  id    Int               @id @default(autoincrement())
+  name  String            @unique
+  holes HoleInformation[]
+}
+
+model HoleInformation {
+  id         Int    @id @default(autoincrement())
+  courseId   Int    
+  holeNumber Int
+  par        Int?
+  yardage    Int?
+  handicap   Int?
+  Course     Course @relation(fields: [courseId], references: [id])
+}
+
+model Round {
+  id    Int             @id @default(autoincrement())
+  date  String
+  name  String
+  holes UserHoleScore[]
+}
+
+model UserHoleScore {
+  id         Int    @id @default(autoincrement())
+  roundId    Int    
+  par        Int?
+  yardage    Int?
+  handicap   Int?
+  holeNumber Int?
+  strokes    Int?
+  notes      String?
+  Round      Round  @relation(fields: [roundId], references: [id])
+}
