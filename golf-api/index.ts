@@ -23,8 +23,6 @@ app.post(
   "/new_course",
   async (req: Request, res: Response): Promise<Response> => {
 
-    console.log(req.body);
-
     try {
       const course = await prisma.course.create({
         data: {
@@ -43,7 +41,6 @@ app.post(
 
       return res.status(200).send({ id: course.id });
     } catch (e) {
-      console.log(e);
       return res.status(500).send();
     }
   }
@@ -73,7 +70,6 @@ app.post(
       }
       return res.status(200).send({ id: round.id });
     } catch (e) {
-      console.log(e)
       return res.status(500).send();
     }
   }
