@@ -71,7 +71,6 @@
 		});
 
 	const updateRound = async () => {
-		console.log(round);
 		await fetch('http://localhost:5000/update_round_scores', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
