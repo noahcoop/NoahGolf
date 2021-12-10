@@ -1,5 +1,5 @@
 import express, { Application, Request, Response } from "express";
-import { Course, HoleInformation, PrismaClient } from "@prisma/client";
+import { Course, HoleInformation, PrismaClient, UserHoleScore } from "@prisma/client";
 
 import cors from "cors";
 
@@ -133,9 +133,53 @@ app.get(
   }
 );
 
+app.get('/get_rounds', async (req: Request, res: Response): Promise<Response> => {
+  
+  try {
+    const rounds = await prisma.round.findMany()
+
+    const roundsWithScores = await Promise.all(rounds.map(async (round) => {
+      const info = await prisma.userHoleScore.findMany({
+        where: {
+          roundId: round.id,
+          }
+        })
+        return {
+          ...round,
+          holes: info
+        }
+      })
+    )
+    return res.status(200).send(roundsWithScores);
+  } catch {
+    return res.status(500).send();
+  }
+})
+
 app.post(
   "/update_round_scores",
   async (req: Request, res: Response): Promise<Response> => {
+
+    const holes = await prisma.userHoleScore.findMany({
+      where: {
+        roundId: Number(req.body.id),
+      }
+    })
+
+    await Promise.all(holes.map(async (hole) => {
+      const { strokes, notes } = req.body.holes.find((i: UserHoleScore) => i.holeNumber === hole.holeNumber)
+      await prisma.userHoleScore.update({
+        where: {
+          id: hole.id,
+        },
+        data: {
+          strokes,
+          notes
+        }
+        })
+      })
+    )
+
     return res.status(200).send();
   }
 );

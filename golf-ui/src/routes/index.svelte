@@ -1,38 +1,41 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { Round } from 'src/types.svelte';
+	import type { Hole, Round } from 'src/types.svelte';
 
-	// TODO - GET rounds from DB
+	const getScore = (holes: Hole[]) => {
+		return holes.reduce((score, hole) => (score += hole.strokes), 0);
+	};
 
-	let previousRounds: Round[] = [
-		{
-			id: 0,
-			date: '01/01/2020',
-			name: 'PGA National',
-			holes: [
-				{
-					id: 0,
-					par: 5,
-					strokes: 5,
-					yardage: 500,
-					handicap: 1,
-					notes: 'Nice par!',
-					holeNumber: 1
-				}
-			]
-		}
-	];
+	let previousRounds: Round[] = [];
+
+	fetch('http://localhost:5000/get_rounds', {
+		method: 'GET'
+	})
+		.then((res) => res.json())
+		.then((data: Round[]) => {
+			previousRounds = data;
+			console.log(previousRounds);
+		});
 </script>
 
-<h1>Welcome to NoahGolf</h1>
-<button on:click={async () => await goto("/new")}>Begin a new round</button>
+<div style="display:flex; justify-content: space-evenly">
+	<div>
+		<h1>Welcome to NoahGolf</h1>
+		<button on:click={async () => await goto('/new')} id="begin-round-button"
+			>Begin a new round</button
+		>
 
-{#each previousRounds as { name: course, date, holes, id }}
-	<div class="home-score" on:click={async () => await goto(`/round?id=${id}`)}>
-		{holes.reduce((score, hole) => (score += hole.strokes), 0)}
-		at {course} on {date}
+		<br />
+		<b>My Previous Rounds:</b>
+		{#each previousRounds as { name: course, date, holes, id }}
+			<div class="home-score" on:click={async () => await goto(`/round?id=${id}`)}>
+				{getScore(holes)}
+				at {course} on {new Date(date).toUTCString().slice(5, 16)}
+			</div>
+		{/each}
 	</div>
-{/each}
+	<img src="https://media.giphy.com/media/EktxJpVkq9VcCu5YjT/giphy-downsized-large.gif" />
+</div>
 
 <style>
 	.home-score {
@@ -40,6 +43,11 @@
 		margin-top: 10px;
 		border: 1px solid black;
 		cursor: pointer;
-		max-width: 300px;
+		width: 300px;
+	}
+
+	#begin-round-button {
+		height: 40px;
+		margin-bottom: 10px;
 	}
 </style>
